@@ -83,12 +83,12 @@ const userLoginSchema = joi.object({
     const senhaCorreta = bcrypt.compareSync(senha, checkUser.senha)
 
     if (!senhaCorreta) return res.status(400).send("Usuário ou senha incorretos")
-
+    
     const token = uuidV4();
 
-    await db.collection("sessoes").insertOne({ idUsuario: checkUser._id, token })
+    await db.collection("sessoes").insertOne({idUsuario: checkUser._id, token })
 
-    return res.status(200).send(token)
+    return res.status(200).send({token, checkUser})
 
   } catch (error) {
     res.status(500).send(error.message)
