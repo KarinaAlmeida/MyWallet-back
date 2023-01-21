@@ -86,7 +86,15 @@ const userLoginSchema = joi.object({
     
     const token = uuidV4();
 
-    await db.collection("sessoes").insertOne({idUsuario: checkUser._id, token })
+   const sessaoAberta= await db.collection("sessoes").findOne({_id: checkUser._id})
+
+
+   if(sessaoAberta) {
+    await db.collection("sessoes").updateOne({_id: checkUser._id}, 
+      {$set: {token}} )
+   }else{
+    await db.collection("sessoes").insertOne({_id: checkUser._id, token })
+   }
 
     return res.status(200).send({token, checkUser})
 
@@ -107,22 +115,24 @@ server.post('/nova-entrada', async (req, res) => {
     if (!token) return res.status(422).send("Informe o token!")
   
     const entradaSchema = joi.object({
-        valor: joi.number().required(),
+        valor: joi.number().precision(2).required(),
         descrição: joi.string().required(),
       });
 
-      const {error}= entradaSchema.validate ({valor, descrição})
+      const {error, value}= entradaSchema.validate ({valor, descrição})
       if (error) return res.status(422).send(error.message)  
-  
+      
   
     try {
   
       const temSessao = await db.collection("sessoes").findOne({ token })
+      console.log(temSessao)
+      console.log(token)
   
       if (!temSessao) return res.status(401).send("Você não está logado! Entre antes de lançar dados!")
     
       await db.collection("carteira").insertOne(
-        {valor, descrição, idUsuario: temSessao.idUsuario,  data: dayjs().format("DD/MM") })
+        {valor:value.valor, descrição:value.descrição, type:"entrada", _id: temSessao._id,  data: dayjs().format("DD/MM") })
       res.send("ok")
   
     } catch (err) {
@@ -147,7 +157,7 @@ server.post('/nova-saida', async (req, res) => {
         descrição: joi.string().required(),
       });
 
-      const {error}= saidaSchema.validate ({valor, descrição})
+      const {error, value}= saidaSchema.validate ({valor, descrição})
       if (error) return res.status(422).send(error.message)  
   
   
@@ -158,7 +168,7 @@ server.post('/nova-saida', async (req, res) => {
       if (!temSessao) return res.status(401).send("Você não está logado! Entre antes de lançar dados!")
     
       await db.collection("carteira").insertOne(
-        {valor, descrição, idUsuario: temSessao.idUsuario,  data: dayjs().format("DD/MM") })
+        {valor: value.valor, type:"saída", descrição: value.descrição, _id: temSessao._id,  data: dayjs().format("DD/MM") })
       res.send("ok")
   
     } catch (err) {
