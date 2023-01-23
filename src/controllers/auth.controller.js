@@ -1,20 +1,19 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidV4 } from 'uuid'
 import { db } from '../db/db.js';
-import joi from "joi";
 
 
 async function cadastroUser (req,res) {
     const user= req.body
 
-    const userSchema = joi.object({
-        nome: joi.string().required(),
-        email: joi.string().email().required(),
-        senha: joi.string().required(),
-        confirmarSenha: joi.ref('senha'),
-      });
-      const {error}= userSchema.validate (user)
-      if (error) return res.status(422).send(error.message)
+    // const userSchema = joi.object({
+    //     nome: joi.string().required(),
+    //     email: joi.string().email().required(),
+    //     senha: joi.string().required(),
+    //     confirmarSenha: joi.ref('senha'),
+    //   });
+      // const {error}= userSchema.validate (user)
+      // if (error) return res.status(422).send(error.message)
       
 
       try {
@@ -36,12 +35,12 @@ async function cadastroUser (req,res) {
 async function loginUser(req, res) {
     const {email, senha}= req.body;
 
-const userLoginSchema = joi.object({
-    email: joi.string().email().required(),
-    senha: joi.string().required(),
-  });
-  const {error}= userLoginSchema.validate ({email, senha})
-  if (error) return res.status(422).send(error.message)
+// const userLoginSchema = joi.object({
+//     email: joi.string().email().required(),
+//     senha: joi.string().required(),
+//   });
+//   const {error}= userLoginSchema.validate ({email, senha})
+//   if (error) return res.status(422).send(error.message)
 
   try {
 
